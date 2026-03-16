@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DEEP SEA LAB</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <img src="/assets/logo/deep-sea-lab-logo.png" alt="DEEP SEA LAB" id="logo" />
+    </header>
+
+    <!-- Room viewport -->
+    <div id="room-viewport">
+      <img id="room-bg" src="/assets/maps/living-room.png" alt="Living Room" />
+
+      <!-- Characters -->
+      <div class="character" id="char-a" data-char="a">
+        <img src="/assets/characters/researcher-a-front.png" alt="研究員A" />
+      </div>
+      <div class="character" id="char-b" data-char="b">
+        <img src="/assets/characters/researcher-b-front.png" alt="研究員B" />
+      </div>
+      <div class="character" id="char-c" data-char="c">
+        <img src="/assets/characters/researcher-c-front.png" alt="研究員C" />
+      </div>
+
+      <!-- Speech bubble -->
+      <div id="speech-bubble" class="hidden">
+        <p id="speech-text"></p>
+      </div>
+    </div>
+
+    <!-- Room navigation -->
+    <nav id="room-nav">
+      <button class="room-btn active" data-room="living-room">居間</button>
+      <button class="room-btn" data-room="control-room">司令室</button>
+    </nav>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

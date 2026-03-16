@@ -1,0 +1,240 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0a0e1a;
+  color: #c8d6e5;
+  font-family: 'Helvetica Neue', 'Hiragino Sans', 'Meiryo', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ===== Header ===== */
+#header {
+  width: 100%;
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(180deg, #0d1225 0%, transparent 100%);
+}
+
+#logo {
+  height: 48px;
+  width: auto;
+  image-rendering: pixelated;
+}
+
+/* ===== Room Viewport ===== */
+#room-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 2px solid #1a2540;
+  border-radius: 4px;
+  background: #080c16;
+}
+
+#room-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  image-rendering: auto;
+  transition: opacity 0.4s ease;
+}
+
+#room-bg.fade-out {
+  opacity: 0;
+}
+
+/* ===== Characters ===== */
+.character {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+  /* Remove black background from sprites */
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.character:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 2px 10px rgba(100, 180, 255, 0.4));
+}
+
+.character:active {
+  transform: scale(0.97);
+}
+
+.character img {
+  height: 100%;
+  width: auto;
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* Character positions - living room */
+#char-a {
+  height: 38%;
+  bottom: 18%;
+  left: 5%;
+}
+
+#char-b {
+  height: 30%;
+  bottom: 18%;
+  left: 38%;
+}
+
+#char-c {
+  height: 34%;
+  bottom: 18%;
+  right: 10%;
+}
+
+/* Character positions - control room */
+.room-control-room #char-a {
+  height: 40%;
+  bottom: 12%;
+  left: 8%;
+  right: auto;
+}
+
+.room-control-room #char-b {
+  height: 32%;
+  bottom: 12%;
+  left: 42%;
+  right: auto;
+}
+
+.room-control-room #char-c {
+  height: 36%;
+  bottom: 12%;
+  right: 12%;
+  left: auto;
+}
+
+/* ===== Speech Bubble ===== */
+#speech-bubble {
+  position: absolute;
+  max-width: 280px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid;
+  font-size: 14px;
+  line-height: 1.6;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 100;
+  /* Triangle will be added per-character via JS positioning */
+}
+
+#speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: var(--tri-left, 30px);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid;
+  border-top-color: inherit;
+}
+
+#speech-bubble.hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* Bubble colors per character */
+#speech-bubble.bubble-a {
+  background: rgba(45, 35, 10, 0.92);
+  border-color: #8b7320;
+  color: #f0dca0;
+}
+#speech-bubble.bubble-a::after {
+  border-top-color: #8b7320;
+}
+
+#speech-bubble.bubble-b {
+  background: rgba(10, 18, 45, 0.92);
+  border-color: #2a4080;
+  color: #a0bce0;
+}
+#speech-bubble.bubble-b::after {
+  border-top-color: #2a4080;
+}
+
+#speech-bubble.bubble-c {
+  background: rgba(40, 12, 12, 0.92);
+  border-color: #802a2a;
+  color: #e0a0a0;
+}
+#speech-bubble.bubble-c::after {
+  border-top-color: #802a2a;
+}
+
+/* ===== Room Navigation ===== */
+#room-nav {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.room-btn {
+  padding: 8px 24px;
+  border: 2px solid #1a2540;
+  border-radius: 6px;
+  background: #0d1225;
+  color: #6880a0;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+
+.room-btn:hover {
+  border-color: #2a4080;
+  color: #a0bce0;
+}
+
+.room-btn.active {
+  border-color: #3a60c0;
+  background: #142040;
+  color: #c0d8f0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  #logo {
+    height: 36px;
+  }
+
+  #speech-bubble {
+    max-width: 200px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .room-btn {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+}
