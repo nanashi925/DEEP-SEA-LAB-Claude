@@ -1,137 +1,159 @@
-import { dialogue } from './dialogue.js';
+(function () {
+  'use strict';
 
-// ===== State =====
-let currentRoom = 'living-room';
-let bubbleTimer = null;
+  // ===== Dialogue Data =====
+  var dialogue = {
+    a: [
+      'おっ、お嬢ちゃん来たか！待ってたぞー！',
+      'なあなあ、この深海魚見たか？デカくないか？',
+      'ここのコーヒー、私が淹れたんだぞ。飲むか？',
+      'ラボの掃除？……えー、明日でよくないか？',
+      'お嬢ちゃん、今日の顔色いいな。なんかあったか？',
+      'じゃあこうしたらどうだ？とりあえず座ろう！',
+      'ほら、ソファ空いてるぞ！遠慮すんな！',
+      '私に任せとけって！……何をかは聞くなよ！',
+      'いやー今日も平和だなー！最高！',
+      'お嬢ちゃんが来ると場が明るくなるな！',
+    ],
+    b: [
+      '……来たか。今、データを整理していたところだ。',
+      '水温が0.3度上昇している。些細だが、記録しておくべきだろう。',
+      '報告書はまとめてある。必要なら言ってくれ。',
+      '焦る必要はない。順を追って確認しよう。',
+      '……静かだな。こういう時間は悪くない。',
+      '観測データに気になる点がある。少し見てくれるか。',
+      'Aがまた騒いでいたが……まあ、いつものことだ。',
+      '効率を考えるなら、まず現状を正確に把握することだ。',
+      'お嬢、何か気になることがあるなら聞こう。',
+      '問題は切り分けて対処する。それが基本だ。',
+    ],
+    c: [
+      '……よく来たな。',
+      '焦るな。まだ崩れちゃいない。',
+      '順番を守れ。それだけでうまくいく。',
+      '……ここは俺が見ている。安心しろ。',
+      '騒がしいのは嫌いじゃない。……少しだけな。',
+      'お嬢、今日は少し休め。明日もあるだろう。',
+      '……考えすぎるな。答えは動いた先にある。',
+      '全体を見ろ。部分に囚われるな。',
+      'Aの言うことも、たまには当たる。……たまにはな。',
+      '……ここにいる間は、俺たちが守る。',
+    ],
+  };
 
-// ===== DOM refs =====
-const roomBg = document.getElementById('room-bg');
-const viewport = document.getElementById('room-viewport');
-const bubble = document.getElementById('speech-bubble');
-const speechText = document.getElementById('speech-text');
-const roomButtons = document.querySelectorAll('.room-btn');
-const characters = document.querySelectorAll('.character');
+  // ===== State =====
+  var currentRoom = 'living-room';
+  var bubbleTimer = null;
 
-// ===== Room backgrounds =====
-const roomBgMap = {
-  'living-room': '/assets/maps/living-room.png',
-  'control-room': '/assets/maps/control-room.png',
-};
+  // ===== DOM refs =====
+  var roomBg = document.getElementById('room-bg');
+  var viewport = document.getElementById('room-viewport');
+  var bubble = document.getElementById('speech-bubble');
+  var speechText = document.getElementById('speech-text');
+  var roomButtons = document.querySelectorAll('.room-btn');
+  var characters = document.querySelectorAll('.character');
 
-// ===== Helpers =====
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+  // ===== Room backgrounds (relative paths) =====
+  var roomBgMap = {
+    'living-room': 'public/assets/maps/living-room.png',
+    'control-room': 'public/assets/maps/control-room.png',
+  };
 
-// ===== Speech Bubble =====
-function showBubble(charId, charEl) {
-  // Clear any existing timer
-  if (bubbleTimer) {
-    clearTimeout(bubbleTimer);
-    bubbleTimer = null;
+  // ===== Helpers =====
+  function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  // Get random line
-  const lines = dialogue[charId];
-  if (!lines) return;
-  const line = pickRandom(lines);
+  // ===== Speech Bubble =====
+  function showBubble(charId, charEl) {
+    if (bubbleTimer) {
+      clearTimeout(bubbleTimer);
+      bubbleTimer = null;
+    }
 
-  // Set text
-  speechText.textContent = line;
+    var lines = dialogue[charId];
+    if (!lines) return;
+    var line = pickRandom(lines);
 
-  // Set color class
-  bubble.className = `bubble-${charId}`;
+    speechText.textContent = line;
+    bubble.className = 'bubble-' + charId;
 
-  // Position bubble above the character
-  const vpRect = viewport.getBoundingClientRect();
-  const charRect = charEl.getBoundingClientRect();
+    var vpRect = viewport.getBoundingClientRect();
+    var charRect = charEl.getBoundingClientRect();
 
-  const charCenterX = charRect.left + charRect.width / 2 - vpRect.left;
-  const charTopY = charRect.top - vpRect.top;
+    var charCenterX = charRect.left + charRect.width / 2 - vpRect.left;
+    var charTopY = charRect.top - vpRect.top;
 
-  // Convert to percentage-based positioning
-  const leftPx = charCenterX - 140; // half of max-width 280
-  const topPx = charTopY - 10; // above character with gap
+    var leftPx = charCenterX - 140;
+    var topPx = charTopY - 10;
 
-  // Clamp within viewport
-  const clampedLeft = Math.max(8, Math.min(leftPx, vpRect.width - 288));
+    var clampedLeft = Math.max(8, Math.min(leftPx, vpRect.width - 288));
 
-  bubble.style.left = clampedLeft + 'px';
-  bubble.style.bottom = 'auto';
-  bubble.style.top = topPx + 'px';
-  bubble.style.transform = 'translateY(-100%)';
+    bubble.style.left = clampedLeft + 'px';
+    bubble.style.bottom = 'auto';
+    bubble.style.top = topPx + 'px';
+    bubble.style.transform = 'translateY(-100%)';
 
-  // Adjust triangle position to point at character
-  const triangleLeft = charCenterX - clampedLeft - 10; // 10 = half triangle width
-  bubble.style.setProperty('--tri-left', Math.max(15, Math.min(triangleLeft, 250)) + 'px');
+    var triangleLeft = charCenterX - clampedLeft - 10;
+    bubble.style.setProperty('--tri-left', Math.max(15, Math.min(triangleLeft, 250)) + 'px');
 
-  // Show
-  requestAnimationFrame(() => {
-    bubble.classList.remove('hidden');
-  });
+    requestAnimationFrame(function () {
+      bubble.classList.remove('hidden');
+    });
 
-  // Auto-hide after 4 seconds
-  bubbleTimer = setTimeout(() => {
-    bubble.classList.add('hidden');
-    bubbleTimer = null;
-  }, 4000);
-}
-
-// ===== Room Switching =====
-function switchRoom(roomId) {
-  if (roomId === currentRoom) return;
-
-  currentRoom = roomId;
-
-  // Update button states
-  roomButtons.forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.room === roomId);
-  });
-
-  // Fade out bg, swap, fade in
-  roomBg.classList.add('fade-out');
-
-  // Hide any bubble
-  bubble.classList.add('hidden');
-  if (bubbleTimer) {
-    clearTimeout(bubbleTimer);
-    bubbleTimer = null;
+    bubbleTimer = setTimeout(function () {
+      bubble.classList.add('hidden');
+      bubbleTimer = null;
+    }, 4000);
   }
 
-  setTimeout(() => {
-    roomBg.src = roomBgMap[roomId];
-    // Update character layout class
-    viewport.className = '';
-    viewport.classList.add(`room-${roomId}`);
-    roomBg.classList.remove('fade-out');
-  }, 400);
-}
+  // ===== Room Switching =====
+  function switchRoom(roomId) {
+    if (roomId === currentRoom) return;
 
-// ===== Event Listeners =====
+    currentRoom = roomId;
 
-// Character taps
-characters.forEach((el) => {
-  el.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const charId = el.dataset.char;
-    showBubble(charId, el);
-  });
-});
+    roomButtons.forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.room === roomId);
+    });
 
-// Room navigation
-roomButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    switchRoom(btn.dataset.room);
-  });
-});
+    roomBg.classList.add('fade-out');
 
-// Tap outside characters hides bubble
-viewport.addEventListener('click', (e) => {
-  if (!e.target.closest('.character')) {
     bubble.classList.add('hidden');
     if (bubbleTimer) {
       clearTimeout(bubbleTimer);
       bubbleTimer = null;
     }
+
+    setTimeout(function () {
+      roomBg.src = roomBgMap[roomId];
+      viewport.className = '';
+      viewport.classList.add('room-' + roomId);
+      roomBg.classList.remove('fade-out');
+    }, 400);
   }
-});
+
+  // ===== Event Listeners =====
+  characters.forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      showBubble(el.dataset.char, el);
+    });
+  });
+
+  roomButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      switchRoom(btn.dataset.room);
+    });
+  });
+
+  viewport.addEventListener('click', function (e) {
+    if (!e.target.closest('.character')) {
+      bubble.classList.add('hidden');
+      if (bubbleTimer) {
+        clearTimeout(bubbleTimer);
+        bubbleTimer = null;
+      }
+    }
+  });
+})();
