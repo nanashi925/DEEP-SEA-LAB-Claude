@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div id="splash-content">
+      <img src="public/assets/logo/deep-sea-lab-logo.png" alt="DEEP SEA LAB" id="splash-logo" />
+      <div id="splash-tap">TAP</div>
+    </div>
+    <canvas id="noise-canvas"></canvas>
+  </div>
+
   <div id="app">
     <!-- Header -->
     <header id="header">
@@ -87,7 +96,7 @@
   </div>
 
   <!-- Theme Song (BGM) -->
-  <audio id="theme-song" loop preload="auto" autoplay>
+  <audio id="theme-song" loop preload="auto">
     <source src="public/assets/audio/deep-sea-lab.mp3" type="audio/mpeg" />
   </audio>
 

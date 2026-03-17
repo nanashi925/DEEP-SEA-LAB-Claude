@@ -192,37 +192,79 @@
   var themeVolume = 1.0;
   var themeFadeTimer = null;
   var mediaIsPlaying = false;
-  var themeUnmuted = false;
 
-  // Try autoplay immediately (muted first if needed, then unmute on interaction)
-  function initThemeSong() {
-    themeSong.volume = themeVolume;
-    var playPromise = themeSong.play();
-    if (playPromise) {
-      playPromise.then(function () {
-        // Autoplay with sound succeeded
-        themeUnmuted = true;
-      }).catch(function () {
-        // Blocked by browser - try muted autoplay, then unmute on first interaction
-        themeSong.muted = true;
-        themeSong.play().catch(function () {});
-        function unmute() {
-          themeSong.muted = false;
-          themeSong.volume = 0;
-          themeUnmuted = true;
-          fadeThemeSong(themeVolume, 800);
-          document.removeEventListener('click', unmute);
-          document.removeEventListener('touchstart', unmute);
-          document.removeEventListener('keydown', unmute);
-        }
-        document.addEventListener('click', unmute, { once: false });
-        document.addEventListener('touchstart', unmute, { once: false });
-        document.addEventListener('keydown', unmute, { once: false });
-      });
+  // ===== Splash Screen =====
+  var splash = document.getElementById('splash');
+  var splashContent = document.getElementById('splash-content');
+  var noiseCanvas = document.getElementById('noise-canvas');
+  var splashDismissed = false;
+
+  function drawNoise(ctx, w, h, alpha) {
+    var imgData = ctx.createImageData(w, h);
+    var d = imgData.data;
+    for (var i = 0; i < d.length; i += 4) {
+      var v = Math.random() * 255;
+      d[i] = v;
+      d[i + 1] = v;
+      d[i + 2] = v;
+      d[i + 3] = alpha;
     }
+    ctx.putImageData(imgData, 0, 0);
   }
 
-  initThemeSong();
+  function dismissSplash() {
+    if (splashDismissed) return;
+    splashDismissed = true;
+    splash.classList.add('dismissed');
+
+    // Start glitch animation on logo
+    splashContent.classList.add('glitch');
+
+    // Draw noise over splash that intensifies
+    var ctx = noiseCanvas.getContext('2d');
+    var scale = 4; // Low-res noise for performance
+    noiseCanvas.width = Math.ceil(window.innerWidth / scale);
+    noiseCanvas.height = Math.ceil(window.innerHeight / scale);
+    ctx.imageSmoothingEnabled = false;
+    noiseCanvas.style.imageRendering = 'pixelated';
+
+    var noiseStart = performance.now();
+    var noiseDuration = 600;
+
+    function noiseStep(now) {
+      var elapsed = now - noiseStart;
+      var progress = Math.min(elapsed / noiseDuration, 1);
+      // Noise alpha ramps up then drops
+      var alpha;
+      if (progress < 0.6) {
+        alpha = (progress / 0.6) * 255;
+      } else {
+        alpha = (1 - (progress - 0.6) / 0.4) * 255;
+      }
+      noiseCanvas.style.opacity = 1;
+      drawNoise(ctx, noiseCanvas.width, noiseCanvas.height, Math.floor(alpha));
+
+      if (progress < 1) {
+        requestAnimationFrame(noiseStep);
+      } else {
+        // Noise done, fade out the splash entirely
+        splash.classList.add('fade-out');
+        setTimeout(function () {
+          splash.style.display = 'none';
+        }, 500);
+      }
+    }
+    requestAnimationFrame(noiseStep);
+
+    // Start BGM with fade in
+    themeSong.volume = 0;
+    themeSong.play().then(function () {
+      fadeThemeSong(themeVolume, 1200);
+    }).catch(function () {});
+  }
+
+  splash.addEventListener('click', dismissSplash);
+  splash.addEventListener('touchstart', dismissSplash);
 
   // Fade theme song volume
   function fadeThemeSong(targetVol, duration, callback) {
