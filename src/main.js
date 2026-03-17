@@ -187,6 +187,56 @@
     }
   });
 
+  // ===== Theme Song (BGM) =====
+  var themeSong = document.getElementById('theme-song');
+  var themeVolume = 1.0;
+  var themeFadeTimer = null;
+  var mediaIsPlaying = false;
+
+  // Start theme song on first user interaction (autoplay policy)
+  function startThemeSong() {
+    if (themeSong.paused) {
+      themeSong.volume = themeVolume;
+      themeSong.play().catch(function () {});
+    }
+  }
+
+  document.addEventListener('click', function initTheme() {
+    startThemeSong();
+    document.removeEventListener('click', initTheme);
+  }, { once: true });
+
+  document.addEventListener('touchstart', function initThemeTouch() {
+    startThemeSong();
+    document.removeEventListener('touchstart', initThemeTouch);
+  }, { once: true });
+
+  // Fade theme song volume
+  function fadeThemeSong(targetVol, duration, callback) {
+    if (themeFadeTimer) cancelAnimationFrame(themeFadeTimer);
+    var startVol = themeSong.volume;
+    var startTime = performance.now();
+
+    function step(now) {
+      var elapsed = now - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      themeSong.volume = startVol + (targetVol - startVol) * progress;
+      if (progress < 1) {
+        themeFadeTimer = requestAnimationFrame(step);
+      } else {
+        themeSong.volume = targetVol;
+        themeFadeTimer = null;
+        if (targetVol === 0) themeSong.pause();
+        if (callback) callback();
+      }
+    }
+    if (themeSong.paused && targetVol > 0) {
+      themeSong.volume = 0;
+      themeSong.play().catch(function () {});
+    }
+    themeFadeTimer = requestAnimationFrame(step);
+  }
+
   // ===== Media Player =====
   var mediaTabs = document.querySelectorAll('.media-tab');
   var mediaInputs = document.querySelectorAll('.media-input-content');
@@ -291,9 +341,19 @@
     var ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
     if (ytMatch) return { type: 'youtube', id: ytMatch[1] };
 
-    // SUNO AI
+    // SUNO AI - extract UUID from various URL patterns
     if (url.indexOf('suno.com') !== -1 || url.indexOf('suno.ai') !== -1) {
-      return { type: 'suno', url: url };
+      // Match UUID pattern in URL: /song/UUID or /s/SHORT_ID
+      var sunoUuid = url.match(/\/song\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+      if (sunoUuid) {
+        return { type: 'suno', audioUrl: 'https://cdn1.suno.ai/' + sunoUuid[1] + '.mp3' };
+      }
+      // Short URL /s/ID - try to use as-is via audio (won't work directly, but provide fallback)
+      var sunoShort = url.match(/\/s\/([a-zA-Z0-9_-]+)/);
+      if (sunoShort) {
+        return { type: 'suno-short', url: url };
+      }
+      return { type: 'suno-short', url: url };
     }
 
     // Direct media file URLs
@@ -306,16 +366,48 @@
     return { type: 'iframe', url: url };
   }
 
-  // Display media in player
+  // Display media in player (with theme song fade-out)
   function showMedia(html) {
-    playerContainer.innerHTML = html;
-    mediaPlayer.classList.remove('hidden');
-    triggerMediaReaction();
+    mediaIsPlaying = true;
+    // Fade out theme song over 0.8s, then show media
+    fadeThemeSong(0, 800, function () {
+      playerContainer.innerHTML = html;
+      mediaPlayer.classList.remove('hidden');
+      triggerMediaReaction();
+      // Listen for media end to resume theme song
+      var mediaEl = playerContainer.querySelector('video, audio');
+      if (mediaEl) {
+        mediaEl.addEventListener('ended', function () {
+          resumeThemeSong();
+        });
+      }
+    });
+  }
+
+  function resumeThemeSong() {
+    mediaIsPlaying = false;
+    fadeThemeSong(themeVolume, 800);
   }
 
   function closeMedia() {
+    // Stop any playing media
+    var mediaEl = playerContainer.querySelector('video, audio');
+    if (mediaEl) {
+      mediaEl.pause();
+      mediaEl.src = '';
+    }
+    // Remove iframes
+    var iframes = playerContainer.querySelectorAll('iframe');
+    iframes.forEach(function (f) { f.src = ''; });
+
     mediaPlayer.classList.add('hidden');
     playerContainer.innerHTML = '';
+    resumeThemeSong();
+  }
+
+  // Sanitize URL for HTML attribute
+  function escAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   // URL submit
@@ -326,23 +418,21 @@
     var parsed = parseMediaUrl(url);
 
     if (parsed.type === 'youtube') {
-      showMedia('<iframe src="https://www.youtube.com/embed/' + parsed.id + '?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+      showMedia('<iframe src="https://www.youtube.com/embed/' + escAttr(parsed.id) + '?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
     } else if (parsed.type === 'suno') {
-      // SUNO AI - extract song ID and embed, or use iframe
-      var sunoMatch = url.match(/suno\.(?:com|ai)\/(?:song\/)?([a-zA-Z0-9-]+)/);
-      if (sunoMatch) {
-        showMedia('<iframe src="https://suno.com/embed/' + sunoMatch[1] + '" allow="autoplay" allowfullscreen></iframe>');
-      } else {
-        showMedia('<iframe src="' + url.replace(/"/g, '&quot;') + '" allow="autoplay" allowfullscreen></iframe>');
-      }
+      // SUNO AI with UUID - play via CDN audio URL
+      showMedia('<audio controls autoplay src="' + escAttr(parsed.audioUrl) + '"></audio>');
+    } else if (parsed.type === 'suno-short') {
+      // SUNO AI short URL - open in iframe as fallback
+      showMedia('<iframe src="' + escAttr(parsed.url) + '" allow="autoplay" allowfullscreen></iframe>');
     } else if (parsed.type === 'video-url') {
-      showMedia('<video controls autoplay src="' + url.replace(/"/g, '&quot;') + '"></video>');
+      showMedia('<video controls autoplay playsinline src="' + escAttr(url) + '"></video>');
     } else if (parsed.type === 'audio-url') {
-      showMedia('<audio controls autoplay src="' + url.replace(/"/g, '&quot;') + '"></audio>');
+      showMedia('<audio controls autoplay src="' + escAttr(url) + '"></audio>');
     } else if (parsed.type === 'image-url') {
-      showMedia('<img src="' + url.replace(/"/g, '&quot;') + '" alt="投稿画像" />');
+      showMedia('<img src="' + escAttr(url) + '" alt="投稿画像" />');
     } else {
-      showMedia('<iframe src="' + url.replace(/"/g, '&quot;') + '" allow="autoplay" allowfullscreen></iframe>');
+      showMedia('<iframe src="' + escAttr(url) + '" allow="autoplay" allowfullscreen></iframe>');
     }
 
     urlInput.value = '';
@@ -363,7 +453,7 @@
     var type = file.type;
 
     if (type.indexOf('video') === 0) {
-      showMedia('<video controls autoplay src="' + objUrl + '"></video>');
+      showMedia('<video controls autoplay playsinline src="' + objUrl + '"></video>');
     } else if (type.indexOf('audio') === 0) {
       showMedia('<audio controls autoplay src="' + objUrl + '"></audio>');
     } else if (type.indexOf('image') === 0) {
