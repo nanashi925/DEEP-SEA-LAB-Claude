@@ -559,4 +559,78 @@
     handleFileSelect(this.files[0]);
     this.value = '';
   });
+
+  // ===== Links Carousel =====
+  (function initLinksCarousel() {
+    var cards = document.querySelectorAll('.links-card');
+    var dots = document.querySelectorAll('.links-dot');
+    if (!cards.length) return;
+
+    var currentIndex = 0;
+    var totalCards = cards.length;
+    var touchStartX = 0;
+    var touchEndX = 0;
+    var carousel = document.getElementById('links-carousel');
+
+    function showCard(index, direction) {
+      cards.forEach(function (card, i) {
+        card.classList.remove('active', 'exit-left');
+        if (i === currentIndex && i !== index) {
+          card.classList.add(direction === 'next' ? 'exit-left' : '');
+        }
+      });
+      dots.forEach(function (dot, i) {
+        dot.classList.toggle('active', i === index);
+      });
+      currentIndex = index;
+      // Small delay for transition effect
+      requestAnimationFrame(function () {
+        cards[currentIndex].classList.add('active');
+      });
+    }
+
+    // Initialize first card
+    cards[0].classList.add('active');
+
+    function nextCard() {
+      var next = (currentIndex + 1) % totalCards;
+      showCard(next, 'next');
+    }
+
+    function prevCard() {
+      var prev = (currentIndex - 1 + totalCards) % totalCards;
+      showCard(prev, 'prev');
+    }
+
+    // Dot click navigation
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        var idx = parseInt(dot.dataset.index, 10);
+        if (idx !== currentIndex) {
+          showCard(idx, idx > currentIndex ? 'next' : 'prev');
+        }
+      });
+    });
+
+    // Swipe support
+    carousel.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', function (e) {
+      touchEndX = e.changedTouches[0].screenX;
+      var diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) nextCard();
+        else prevCard();
+      }
+    }, { passive: true });
+
+    // Click on card area (not on links) to go next
+    var cardArea = document.querySelector('.links-card-area');
+    cardArea.addEventListener('click', function (e) {
+      if (e.target.closest('.links-url')) return; // Don't navigate when clicking a link
+      nextCard();
+    });
+  })();
 })();
