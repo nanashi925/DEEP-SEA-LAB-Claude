@@ -564,73 +564,69 @@
   (function initLinksCarousel() {
     var cards = document.querySelectorAll('.links-card');
     var dots = document.querySelectorAll('.links-dot');
+    var prevBtn = document.getElementById('links-prev');
+    var nextBtn = document.getElementById('links-next');
     if (!cards.length) return;
 
     var currentIndex = 0;
     var totalCards = cards.length;
     var touchStartX = 0;
-    var touchEndX = 0;
-    var carousel = document.getElementById('links-carousel');
+    var isSwiping = false;
+    var cardArea = document.querySelector('.links-card-area');
 
-    function showCard(index, direction) {
-      cards.forEach(function (card, i) {
-        card.classList.remove('active', 'exit-left');
-        if (i === currentIndex && i !== index) {
-          card.classList.add(direction === 'next' ? 'exit-left' : '');
-        }
+    function showCard(index) {
+      cards.forEach(function (card) {
+        card.classList.remove('active');
       });
       dots.forEach(function (dot, i) {
         dot.classList.toggle('active', i === index);
       });
       currentIndex = index;
-      // Small delay for transition effect
-      requestAnimationFrame(function () {
-        cards[currentIndex].classList.add('active');
-      });
+      cards[currentIndex].classList.add('active');
     }
 
-    // Initialize first card
-    cards[0].classList.add('active');
-
     function nextCard() {
-      var next = (currentIndex + 1) % totalCards;
-      showCard(next, 'next');
+      showCard((currentIndex + 1) % totalCards);
     }
 
     function prevCard() {
-      var prev = (currentIndex - 1 + totalCards) % totalCards;
-      showCard(prev, 'prev');
+      showCard((currentIndex - 1 + totalCards) % totalCards);
     }
+
+    // Arrow button navigation
+    prevBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      prevCard();
+    });
+    nextBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      nextCard();
+    });
 
     // Dot click navigation
     dots.forEach(function (dot) {
       dot.addEventListener('click', function () {
         var idx = parseInt(dot.dataset.index, 10);
-        if (idx !== currentIndex) {
-          showCard(idx, idx > currentIndex ? 'next' : 'prev');
-        }
+        if (idx !== currentIndex) showCard(idx);
       });
     });
 
-    // Swipe support
-    carousel.addEventListener('touchstart', function (e) {
+    // Swipe support (on card area only, not whole carousel)
+    cardArea.addEventListener('touchstart', function (e) {
       touchStartX = e.changedTouches[0].screenX;
+      isSwiping = false;
     }, { passive: true });
 
-    carousel.addEventListener('touchend', function (e) {
-      touchEndX = e.changedTouches[0].screenX;
-      var diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0) nextCard();
-        else prevCard();
-      }
+    cardArea.addEventListener('touchmove', function (e) {
+      var diff = Math.abs(e.changedTouches[0].screenX - touchStartX);
+      if (diff > 20) isSwiping = true;
     }, { passive: true });
 
-    // Click on card area (not on links) to go next
-    var cardArea = document.querySelector('.links-card-area');
-    cardArea.addEventListener('click', function (e) {
-      if (e.target.closest('.links-url')) return; // Don't navigate when clicking a link
-      nextCard();
-    });
+    cardArea.addEventListener('touchend', function (e) {
+      if (!isSwiping) return; // Not a swipe, let the tap/click through to the link
+      var diff = touchStartX - e.changedTouches[0].screenX;
+      if (diff > 40) nextCard();
+      else if (diff < -40) prevCard();
+    }, { passive: true });
   })();
 })();
