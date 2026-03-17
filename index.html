@@ -39,6 +39,51 @@
       <button class="room-btn active" data-room="living-room">居間</button>
       <button class="room-btn" data-room="control-room">司令室</button>
     </nav>
+
+    <!-- Media Player -->
+    <section id="media-section">
+      <div id="media-input-bar">
+        <div id="media-type-tabs">
+          <button class="media-tab active" data-type="url">URL</button>
+          <button class="media-tab" data-type="video">動画</button>
+          <button class="media-tab" data-type="photo">写真</button>
+          <button class="media-tab" data-type="file">ファイル</button>
+        </div>
+        <div id="media-input-area">
+          <!-- URL input (default) -->
+          <div id="input-url" class="media-input-content">
+            <input type="text" id="url-input" placeholder="YouTube / SUNO AI のURLを貼り付け" />
+            <button id="url-submit">再生</button>
+          </div>
+          <!-- Video file input -->
+          <div id="input-video" class="media-input-content hidden">
+            <label class="file-label">
+              <span>動画ファイルを選択</span>
+              <input type="file" id="video-file-input" accept="video/*" />
+            </label>
+          </div>
+          <!-- Photo input -->
+          <div id="input-photo" class="media-input-content hidden">
+            <label class="file-label">
+              <span>写真を選択</span>
+              <input type="file" id="photo-file-input" accept="image/*" />
+            </label>
+          </div>
+          <!-- Generic file input -->
+          <div id="input-file" class="media-input-content hidden">
+            <label class="file-label">
+              <span>ファイルを選択</span>
+              <input type="file" id="generic-file-input" accept="audio/*,video/*,image/*" />
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Player display area -->
+      <div id="media-player" class="hidden">
+        <button id="media-close" title="閉じる">&times;</button>
+        <div id="player-container"></div>
+      </div>
+    </section>
   </div>
 
   <script src="src/main.js"></script>

@@ -186,4 +186,205 @@
       }
     }
   });
+
+  // ===== Media Player =====
+  var mediaTabs = document.querySelectorAll('.media-tab');
+  var mediaInputs = document.querySelectorAll('.media-input-content');
+  var mediaPlayer = document.getElementById('media-player');
+  var playerContainer = document.getElementById('player-container');
+  var urlInput = document.getElementById('url-input');
+  var urlSubmit = document.getElementById('url-submit');
+  var mediaClose = document.getElementById('media-close');
+  var videoFileInput = document.getElementById('video-file-input');
+  var photoFileInput = document.getElementById('photo-file-input');
+  var genericFileInput = document.getElementById('generic-file-input');
+
+  // Media reaction comments (generic, not about specific content)
+  var mediaReactions = {
+    a: [
+      'おっ、何か始まるのか！？',
+      'お、再生するぞ！みんな注目ー！',
+      'わくわくするなあ！何だろ！',
+      'ほほー、ちょっと見てみようぜ！',
+      'おお！いいねいいね！',
+      'よーし、鑑賞タイムだ！',
+      'お嬢ちゃんのチョイスか！楽しみだ！',
+    ],
+    b: [
+      '……再生するのか。見てみよう。',
+      'ふむ、確認しよう。',
+      '……少し気になるな。再生してくれ。',
+      'データの一種だと思えば、確認は必要だ。',
+      '了解した。視聴しよう。',
+      '……お嬢のセレクトか。悪くない。',
+    ],
+    c: [
+      '……再生しろ。',
+      '……聞いてやる。',
+      'ふん……見てみるか。',
+      '……静かにしろ。始まるぞ。',
+      '……お嬢が選んだなら、見る価値はあるだろう。',
+      '……いいだろう。付き合ってやる。',
+    ],
+  };
+
+  // Tab switching
+  mediaTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      mediaTabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+
+      var type = tab.dataset.type;
+      mediaInputs.forEach(function (input) { input.classList.add('hidden'); });
+      document.getElementById('input-' + type).classList.remove('hidden');
+    });
+  });
+
+  // Show character reaction when media plays
+  function triggerMediaReaction() {
+    var charIds = ['a', 'b', 'c'];
+    var chosen = pickRandom(charIds);
+    var charEl = document.getElementById('char-' + chosen);
+    var lines = mediaReactions[chosen];
+    var line = pickRandom(lines);
+
+    if (bubbleTimer) {
+      clearTimeout(bubbleTimer);
+      bubbleTimer = null;
+    }
+
+    speechText.textContent = line;
+    bubble.className = 'bubble-' + chosen;
+
+    var vpRect = viewport.getBoundingClientRect();
+    var charRect = charEl.getBoundingClientRect();
+
+    var charCenterX = charRect.left + charRect.width / 2 - vpRect.left;
+    var charTopY = charRect.top - vpRect.top;
+
+    var leftPx = charCenterX - 140;
+    var topPx = charTopY - 10;
+
+    var clampedLeft = Math.max(8, Math.min(leftPx, vpRect.width - 288));
+
+    bubble.style.left = clampedLeft + 'px';
+    bubble.style.bottom = 'auto';
+    bubble.style.top = topPx + 'px';
+    bubble.style.transform = 'translateY(-100%)';
+
+    var triangleLeft = charCenterX - clampedLeft - 10;
+    bubble.style.setProperty('--tri-left', Math.max(15, Math.min(triangleLeft, 250)) + 'px');
+
+    requestAnimationFrame(function () {
+      bubble.classList.remove('hidden');
+    });
+
+    bubbleTimer = setTimeout(function () {
+      bubble.classList.add('hidden');
+      bubbleTimer = null;
+    }, 4000);
+  }
+
+  // Parse URL to determine media type
+  function parseMediaUrl(url) {
+    // YouTube
+    var ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return { type: 'youtube', id: ytMatch[1] };
+
+    // SUNO AI
+    if (url.indexOf('suno.com') !== -1 || url.indexOf('suno.ai') !== -1) {
+      return { type: 'suno', url: url };
+    }
+
+    // Direct media file URLs
+    var lower = url.toLowerCase();
+    if (lower.match(/\.(mp4|webm|ogv|mov)(\?|$)/)) return { type: 'video-url', url: url };
+    if (lower.match(/\.(mp3|wav|ogg|flac|aac|m4a)(\?|$)/)) return { type: 'audio-url', url: url };
+    if (lower.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|$)/)) return { type: 'image-url', url: url };
+
+    // Unknown URL - try as iframe
+    return { type: 'iframe', url: url };
+  }
+
+  // Display media in player
+  function showMedia(html) {
+    playerContainer.innerHTML = html;
+    mediaPlayer.classList.remove('hidden');
+    triggerMediaReaction();
+  }
+
+  function closeMedia() {
+    mediaPlayer.classList.add('hidden');
+    playerContainer.innerHTML = '';
+  }
+
+  // URL submit
+  urlSubmit.addEventListener('click', function () {
+    var url = urlInput.value.trim();
+    if (!url) return;
+
+    var parsed = parseMediaUrl(url);
+
+    if (parsed.type === 'youtube') {
+      showMedia('<iframe src="https://www.youtube.com/embed/' + parsed.id + '?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>');
+    } else if (parsed.type === 'suno') {
+      // SUNO AI - extract song ID and embed, or use iframe
+      var sunoMatch = url.match(/suno\.(?:com|ai)\/(?:song\/)?([a-zA-Z0-9-]+)/);
+      if (sunoMatch) {
+        showMedia('<iframe src="https://suno.com/embed/' + sunoMatch[1] + '" allow="autoplay" allowfullscreen></iframe>');
+      } else {
+        showMedia('<iframe src="' + url.replace(/"/g, '&quot;') + '" allow="autoplay" allowfullscreen></iframe>');
+      }
+    } else if (parsed.type === 'video-url') {
+      showMedia('<video controls autoplay src="' + url.replace(/"/g, '&quot;') + '"></video>');
+    } else if (parsed.type === 'audio-url') {
+      showMedia('<audio controls autoplay src="' + url.replace(/"/g, '&quot;') + '"></audio>');
+    } else if (parsed.type === 'image-url') {
+      showMedia('<img src="' + url.replace(/"/g, '&quot;') + '" alt="投稿画像" />');
+    } else {
+      showMedia('<iframe src="' + url.replace(/"/g, '&quot;') + '" allow="autoplay" allowfullscreen></iframe>');
+    }
+
+    urlInput.value = '';
+  });
+
+  // Enter key on URL input
+  urlInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') urlSubmit.click();
+  });
+
+  // Close button
+  mediaClose.addEventListener('click', closeMedia);
+
+  // File inputs
+  function handleFileSelect(file) {
+    if (!file) return;
+    var objUrl = URL.createObjectURL(file);
+    var type = file.type;
+
+    if (type.indexOf('video') === 0) {
+      showMedia('<video controls autoplay src="' + objUrl + '"></video>');
+    } else if (type.indexOf('audio') === 0) {
+      showMedia('<audio controls autoplay src="' + objUrl + '"></audio>');
+    } else if (type.indexOf('image') === 0) {
+      showMedia('<img src="' + objUrl + '" alt="投稿画像" />');
+    } else {
+      showMedia('<p style="color:#6880a0;padding:20px;text-align:center;">このファイル形式は再生できません</p>');
+    }
+  }
+
+  videoFileInput.addEventListener('change', function () {
+    handleFileSelect(this.files[0]);
+    this.value = '';
+  });
+
+  photoFileInput.addEventListener('change', function () {
+    handleFileSelect(this.files[0]);
+    this.value = '';
+  });
+
+  genericFileInput.addEventListener('change', function () {
+    handleFileSelect(this.files[0]);
+    this.value = '';
+  });
 })();
