@@ -463,6 +463,142 @@ body {
 }
 
 
+/* ===== Members Section ===== */
+#members-section {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* --- Cover (banner + TAP) --- */
+#members-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#members-cover.dissolve {
+  opacity: 0;
+  transform: scale(0.92);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+#members-banner {
+  width: 100%;
+  border-radius: 6px;
+  border: 2px solid #1a2540;
+  display: block;
+}
+
+#members-tap {
+  width: 56px;
+  height: 56px;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  animation: tap-pulse 2s ease-in-out infinite;
+}
+
+/* --- Profiles (hidden by default) --- */
+#members-profiles {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+#members-profiles.hidden {
+  display: none;
+}
+
+/* Each member card slides in staggered */
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #0d1225;
+  border: 2px solid #1a2540;
+  border-radius: 8px;
+  padding: 14px;
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.member-card.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.member-card[data-member="a"] { transition-delay: 0.1s; }
+.member-card[data-member="b"] { transition-delay: 0.3s; }
+.member-card[data-member="c"] { transition-delay: 0.5s; }
+
+.member-img {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid #2a4060;
+}
+
+.member-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-info h3 {
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+}
+
+.member-info p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c8d6e5;
+}
+
+/* Per-member colors */
+.member-color-a h3 { color: #f0d060; }
+.member-color-a { border-left: 3px solid #c8a830; }
+
+.member-color-b h3 { color: #60a0f0; }
+.member-color-b { border-left: 3px solid #3070c0; }
+
+.member-color-c h3 { color: #f06060; }
+.member-color-c { border-left: 3px solid #c03030; }
+
+/* Back button */
+#members-back {
+  align-self: center;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease 0.7s, transform 0.4s ease 0.7s,
+              border-color 0.2s ease, color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#members-back.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ===== Media Section ===== */
 #media-section {
   width: 100%;
@@ -726,5 +862,36 @@ body {
     width: 24px;
     height: 24px;
     font-size: 12px;
+  }
+
+  .member-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .member-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .member-info {
+    border-left: none !important;
+    padding-left: 0;
+  }
+
+  .member-info h3 {
+    font-size: 13px;
+  }
+
+  .member-info p {
+    font-size: 11px;
+  }
+
+  #members-tap {
+    width: 44px;
+    height: 44px;
+    font-size: 11px;
   }
 }

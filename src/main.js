@@ -560,6 +560,51 @@
     this.value = '';
   });
 
+  // ===== Members Section =====
+  (function initMembers() {
+    var cover = document.getElementById('members-cover');
+    var profiles = document.getElementById('members-profiles');
+    var tapBtn = document.getElementById('members-tap');
+    var backBtn = document.getElementById('members-back');
+    var cards = profiles.querySelectorAll('.member-card');
+    if (!cover || !profiles) return;
+
+    tapBtn.addEventListener('click', function () {
+      // Dissolve the cover image
+      cover.classList.add('dissolve');
+
+      setTimeout(function () {
+        cover.style.display = 'none';
+        profiles.classList.remove('hidden');
+
+        // Staggered slide-in of member cards
+        requestAnimationFrame(function () {
+          cards.forEach(function (card) {
+            card.classList.add('visible');
+          });
+          backBtn.classList.add('visible');
+        });
+      }, 600);
+    });
+
+    backBtn.addEventListener('click', function () {
+      // Hide profiles
+      cards.forEach(function (card) {
+        card.classList.remove('visible');
+      });
+      backBtn.classList.remove('visible');
+
+      setTimeout(function () {
+        profiles.classList.add('hidden');
+        cover.style.display = '';
+        // Reset dissolve then fade back in
+        requestAnimationFrame(function () {
+          cover.classList.remove('dissolve');
+        });
+      }, 400);
+    });
+  })();
+
   // ===== Links Carousel =====
   (function initLinksCarousel() {
     var cards = document.querySelectorAll('.links-card');
