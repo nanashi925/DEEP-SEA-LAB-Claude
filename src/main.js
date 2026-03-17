@@ -281,7 +281,10 @@
   }
 
   splash.addEventListener('click', dismissSplash);
-  splash.addEventListener('touchstart', dismissSplash);
+  splash.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    dismissSplash();
+  });
 
   // Fade theme song volume
   function fadeThemeSong(targetVol, duration, callback) {
