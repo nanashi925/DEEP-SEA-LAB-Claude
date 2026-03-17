@@ -5,7 +5,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 9999;
+  z-index: 10000;
   background: #060a14;
   display: flex;
   align-items: center;
@@ -23,65 +23,60 @@
   flex-direction: column;
   align-items: center;
   gap: 28px;
-  z-index: 2;
-  transition: opacity 0.15s;
 }
 
 #splash-logo {
-  height: 72px;
+  max-width: 70vw;
+  max-height: 50vh;
   width: auto;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 20px rgba(58, 96, 192, 0.3));
+  height: auto;
+  filter: drop-shadow(0 0 30px rgba(58, 96, 192, 0.4));
 }
 
 #splash-tap {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
-  letter-spacing: 0.4em;
-  color: #3a5a90;
+  letter-spacing: 0.5em;
+  color: #4a7ac0;
   animation: tap-pulse 2s ease-in-out infinite;
 }
 
 @keyframes tap-pulse {
-  0%, 100% { opacity: 0.4; }
+  0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
-}
-
-/* Noise canvas overlays the splash during dissolve */
-#noise-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  opacity: 0;
-  pointer-events: none;
 }
 
 /* Glitch animation on logo when tapped */
 #splash-content.glitch {
-  animation: logo-glitch 0.6s steps(4) forwards;
+  animation: logo-glitch 0.8s steps(6) forwards;
 }
 
 @keyframes logo-glitch {
-  0% { transform: translate(0, 0); filter: none; opacity: 1; }
-  10% { transform: translate(-8px, 2px); filter: hue-rotate(90deg) brightness(1.5); }
-  20% { transform: translate(6px, -4px); filter: hue-rotate(180deg) brightness(0.8); }
-  30% { transform: translate(-4px, 6px); filter: hue-rotate(270deg) saturate(3); }
-  40% { transform: translate(10px, -2px); filter: invert(0.3) brightness(1.8); }
-  50% { transform: translate(-6px, -6px); filter: hue-rotate(45deg) contrast(2); opacity: 0.7; }
-  60% { transform: translate(4px, 8px); filter: invert(0.5) hue-rotate(135deg); opacity: 0.5; }
-  70% { transform: translate(-10px, 0px); filter: brightness(2) saturate(0); opacity: 0.3; }
-  80% { transform: translate(8px, -8px); filter: hue-rotate(200deg) brightness(3); opacity: 0.15; }
-  90% { transform: translate(-2px, 4px); filter: brightness(4); opacity: 0.05; }
-  100% { transform: translate(0, 0); filter: brightness(5); opacity: 0; }
+  0%   { transform: translate(0, 0) scaleX(1); filter: none; opacity: 1; }
+  8%   { transform: translate(-12px, 3px) scaleX(1.02); filter: hue-rotate(60deg) brightness(1.4); }
+  16%  { transform: translate(8px, -5px) scaleX(0.98); filter: hue-rotate(180deg) brightness(0.7); }
+  24%  { transform: translate(-6px, 8px) scaleX(1.05); filter: hue-rotate(270deg) saturate(3); }
+  32%  { transform: translate(14px, -3px) scaleX(0.95); filter: invert(0.4) brightness(2); opacity: 0.8; }
+  40%  { transform: translate(-10px, -8px) scaleX(1.08); filter: hue-rotate(45deg) contrast(2.5); opacity: 0.6; }
+  50%  { transform: translate(6px, 10px) scaleX(0.9); filter: invert(0.6) hue-rotate(135deg); opacity: 0.5; }
+  60%  { transform: translate(-16px, 0) scaleX(1.1); filter: brightness(2.5) saturate(0); opacity: 0.3; }
+  70%  { transform: translate(10px, -10px) scaleX(0.85); filter: hue-rotate(200deg) brightness(3); opacity: 0.2; }
+  80%  { transform: translate(-4px, 6px) scaleX(1.15); filter: brightness(4) invert(0.3); opacity: 0.1; }
+  90%  { transform: translate(2px, -2px) scaleX(0.8); filter: brightness(5); opacity: 0.03; }
+  100% { transform: translate(0, 0) scaleX(1); filter: brightness(6); opacity: 0; }
 }
 
-/* Splash fade-out after noise */
-#splash.fade-out {
-  transition: opacity 0.5s ease;
+/* Noise canvas - sits between splash and app content */
+#noise-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
   opacity: 0;
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
 /* ===== Reset & Base ===== */

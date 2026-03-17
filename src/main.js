@@ -217,50 +217,67 @@
     splashDismissed = true;
     splash.classList.add('dismissed');
 
-    // Start glitch animation on logo
+    // Phase 1: Logo glitch animation (CSS handles this)
     splashContent.classList.add('glitch');
 
-    // Draw noise over splash that intensifies
+    // Setup noise canvas
     var ctx = noiseCanvas.getContext('2d');
-    var scale = 4; // Low-res noise for performance
+    var scale = 4;
     noiseCanvas.width = Math.ceil(window.innerWidth / scale);
     noiseCanvas.height = Math.ceil(window.innerHeight / scale);
     ctx.imageSmoothingEnabled = false;
-    noiseCanvas.style.imageRendering = 'pixelated';
 
-    var noiseStart = performance.now();
-    var noiseDuration = 600;
+    // Timeline:
+    // 0-400ms:   Logo glitches, noise starts building (splash still visible)
+    // 400-800ms: Splash fades out, noise peaks (covers everything)
+    // 800-1600ms: Noise gradually clears, revealing the lab behind
+    var totalDuration = 1600;
+    var startTime = performance.now();
 
-    function noiseStep(now) {
-      var elapsed = now - noiseStart;
-      var progress = Math.min(elapsed / noiseDuration, 1);
-      // Noise alpha ramps up then drops
+    function animateTransition(now) {
+      var elapsed = now - startTime;
+      var progress = Math.min(elapsed / totalDuration, 1);
+
       var alpha;
-      if (progress < 0.6) {
-        alpha = (progress / 0.6) * 255;
+      if (progress < 0.25) {
+        // Phase 1: Noise builds up (0 → 255)
+        alpha = (progress / 0.25) * 255;
+        noiseCanvas.style.opacity = 1;
+      } else if (progress < 0.5) {
+        // Phase 2: Noise at peak, splash fading behind it
+        alpha = 255;
+        noiseCanvas.style.opacity = 1;
       } else {
-        alpha = (1 - (progress - 0.6) / 0.4) * 255;
+        // Phase 3: Noise fades out, lab revealed
+        var fadeProgress = (progress - 0.5) / 0.5;
+        alpha = (1 - fadeProgress) * 255;
+        noiseCanvas.style.opacity = 1;
       }
-      noiseCanvas.style.opacity = 1;
-      drawNoise(ctx, noiseCanvas.width, noiseCanvas.height, Math.floor(alpha));
+
+      drawNoise(ctx, noiseCanvas.width, noiseCanvas.height, Math.floor(Math.max(0, alpha)));
+
+      // Remove splash at the noise peak so lab is behind the noise
+      if (progress >= 0.35 && splash.style.display !== 'none') {
+        splash.style.display = 'none';
+      }
 
       if (progress < 1) {
-        requestAnimationFrame(noiseStep);
+        requestAnimationFrame(animateTransition);
       } else {
-        // Noise done, fade out the splash entirely
-        splash.classList.add('fade-out');
-        setTimeout(function () {
-          splash.style.display = 'none';
-        }, 500);
+        // All done, clean up
+        noiseCanvas.style.opacity = 0;
+        noiseCanvas.style.display = 'none';
       }
     }
-    requestAnimationFrame(noiseStep);
+    requestAnimationFrame(animateTransition);
 
-    // Start BGM with fade in
-    themeSong.volume = 0;
-    themeSong.play().then(function () {
-      fadeThemeSong(themeVolume, 1200);
-    }).catch(function () {});
+    // Start BGM with fade in (slightly delayed so it syncs with lab reveal)
+    setTimeout(function () {
+      themeSong.volume = 0;
+      themeSong.play().then(function () {
+        fadeThemeSong(themeVolume, 1500);
+      }).catch(function () {});
+    }, 300);
   }
 
   splash.addEventListener('click', dismissSplash);

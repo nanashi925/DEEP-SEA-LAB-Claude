@@ -7,13 +7,15 @@
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
+  <!-- Noise overlay (between splash and app, persists during transition) -->
+  <canvas id="noise-canvas"></canvas>
+
   <!-- Splash Screen -->
   <div id="splash">
     <div id="splash-content">
       <img src="public/assets/logo/deep-sea-lab-logo.png" alt="DEEP SEA LAB" id="splash-logo" />
       <div id="splash-tap">TAP</div>
     </div>
-    <canvas id="noise-canvas"></canvas>
   </div>
 
   <div id="app">
