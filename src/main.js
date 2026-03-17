@@ -566,44 +566,29 @@
     var dots = document.querySelectorAll('.links-dot');
     var prevBtn = document.getElementById('links-prev');
     var nextBtn = document.getElementById('links-next');
+    var carousel = document.getElementById('links-carousel');
     if (!cards.length) return;
 
     var currentIndex = 0;
     var totalCards = cards.length;
     var touchStartX = 0;
     var isSwiping = false;
-    var cardArea = document.querySelector('.links-card-area');
 
     function showCard(index) {
-      cards.forEach(function (card) {
-        card.classList.remove('active');
-      });
-      dots.forEach(function (dot, i) {
-        dot.classList.toggle('active', i === index);
-      });
+      cards.forEach(function (card) { card.classList.remove('active'); });
+      dots.forEach(function (dot, i) { dot.classList.toggle('active', i === index); });
       currentIndex = index;
       cards[currentIndex].classList.add('active');
     }
 
-    function nextCard() {
-      showCard((currentIndex + 1) % totalCards);
-    }
+    function nextCard() { showCard((currentIndex + 1) % totalCards); }
+    function prevCard() { showCard((currentIndex - 1 + totalCards) % totalCards); }
 
-    function prevCard() {
-      showCard((currentIndex - 1 + totalCards) % totalCards);
-    }
+    // Arrow buttons
+    prevBtn.addEventListener('click', prevCard);
+    nextBtn.addEventListener('click', nextCard);
 
-    // Arrow button navigation
-    prevBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      prevCard();
-    });
-    nextBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      nextCard();
-    });
-
-    // Dot click navigation
+    // Dot navigation
     dots.forEach(function (dot) {
       dot.addEventListener('click', function () {
         var idx = parseInt(dot.dataset.index, 10);
@@ -611,19 +596,18 @@
       });
     });
 
-    // Swipe support (on card area only, not whole carousel)
-    cardArea.addEventListener('touchstart', function (e) {
+    // Swipe on whole carousel
+    carousel.addEventListener('touchstart', function (e) {
       touchStartX = e.changedTouches[0].screenX;
       isSwiping = false;
     }, { passive: true });
 
-    cardArea.addEventListener('touchmove', function (e) {
-      var diff = Math.abs(e.changedTouches[0].screenX - touchStartX);
-      if (diff > 20) isSwiping = true;
+    carousel.addEventListener('touchmove', function (e) {
+      if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 25) isSwiping = true;
     }, { passive: true });
 
-    cardArea.addEventListener('touchend', function (e) {
-      if (!isSwiping) return; // Not a swipe, let the tap/click through to the link
+    carousel.addEventListener('touchend', function (e) {
+      if (!isSwiping) return;
       var diff = touchStartX - e.changedTouches[0].screenX;
       if (diff > 40) nextCard();
       else if (diff < -40) prevCard();
