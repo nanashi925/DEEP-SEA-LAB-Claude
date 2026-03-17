@@ -563,46 +563,129 @@
   // ===== Members Section =====
   (function initMembers() {
     var cover = document.getElementById('members-cover');
-    var profiles = document.getElementById('members-profiles');
+    var carousel = document.getElementById('members-carousel');
     var tapBtn = document.getElementById('members-tap');
-    var backBtn = document.getElementById('members-back');
-    var cards = profiles.querySelectorAll('.member-card');
-    if (!cover || !profiles) return;
+    var noiseEl = document.getElementById('members-noise');
+    var slides = document.querySelectorAll('.member-slide');
+    var dots = document.querySelectorAll('.members-dot');
+    var prevBtn = document.getElementById('members-prev');
+    var nextBtn = document.getElementById('members-next');
+    if (!cover || !carousel) return;
 
+    var currentSlide = 0;
+    var totalSlides = slides.length;
+
+    function showSlide(index) {
+      slides.forEach(function (s) { s.classList.remove('active'); });
+      dots.forEach(function (d, i) { d.classList.toggle('active', i === index); });
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+    }
+
+    // Noise transition helper
+    function noiseTransition(onPeak, onDone) {
+      var section = document.getElementById('members-section');
+      var w = section.offsetWidth;
+      var h = section.offsetHeight;
+      var scale = 4;
+      noiseEl.width = Math.ceil(w / scale);
+      noiseEl.height = Math.ceil(h / scale);
+      noiseEl.style.width = w + 'px';
+      noiseEl.style.height = h + 'px';
+      noiseEl.classList.remove('hidden');
+
+      var ctx = noiseEl.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      var duration = 800;
+      var start = performance.now();
+
+      function frame(now) {
+        var progress = Math.min((now - start) / duration, 1);
+        var alpha;
+        if (progress < 0.4) {
+          alpha = (progress / 0.4) * 255;
+        } else if (progress < 0.6) {
+          alpha = 255;
+        } else {
+          alpha = (1 - (progress - 0.6) / 0.4) * 255;
+        }
+        // Draw noise
+        var imgData = ctx.createImageData(noiseEl.width, noiseEl.height);
+        var d = imgData.data;
+        for (var i = 0; i < d.length; i += 4) {
+          var v = Math.random() * 255;
+          d[i] = v; d[i + 1] = v; d[i + 2] = v;
+          d[i + 3] = Math.floor(Math.max(0, alpha));
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        if (progress >= 0.4 && progress < 0.6 && onPeak) {
+          onPeak();
+          onPeak = null; // only once
+        }
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          noiseEl.classList.add('hidden');
+          if (onDone) onDone();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    // TAP → noise → show carousel
     tapBtn.addEventListener('click', function () {
-      // Dissolve the cover image
-      cover.classList.add('dissolve');
-
-      setTimeout(function () {
-        cover.style.display = 'none';
-        profiles.classList.remove('hidden');
-
-        // Staggered slide-in of member cards
-        requestAnimationFrame(function () {
-          cards.forEach(function (card) {
-            card.classList.add('visible');
-          });
-          backBtn.classList.add('visible');
-        });
-      }, 600);
-    });
-
-    backBtn.addEventListener('click', function () {
-      // Hide profiles
-      cards.forEach(function (card) {
-        card.classList.remove('visible');
+      noiseTransition(function () {
+        cover.classList.add('hidden');
+        carousel.classList.remove('hidden');
+        showSlide(0);
       });
-      backBtn.classList.remove('visible');
-
-      setTimeout(function () {
-        profiles.classList.add('hidden');
-        cover.style.display = '';
-        // Reset dissolve then fade back in
-        requestAnimationFrame(function () {
-          cover.classList.remove('dissolve');
-        });
-      }, 400);
     });
+
+    // Prev button on first slide → back to cover
+    prevBtn.addEventListener('click', function () {
+      if (currentSlide === 0) {
+        // Go back to cover with noise
+        noiseTransition(function () {
+          carousel.classList.add('hidden');
+          cover.classList.remove('hidden');
+        });
+      } else {
+        showSlide(currentSlide - 1);
+      }
+    });
+
+    nextBtn.addEventListener('click', function () {
+      showSlide((currentSlide + 1) % totalSlides);
+    });
+
+    // Dot navigation
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        var idx = parseInt(dot.dataset.index, 10);
+        if (idx !== currentSlide) showSlide(idx);
+      });
+    });
+
+    // Swipe support
+    var touchStartX = 0;
+    var isSwiping = false;
+
+    carousel.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].screenX;
+      isSwiping = false;
+    }, { passive: true });
+
+    carousel.addEventListener('touchmove', function (e) {
+      if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 20) isSwiping = true;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', function (e) {
+      if (!isSwiping) return;
+      var diff = touchStartX - e.changedTouches[0].screenX;
+      if (diff > 40) nextBtn.click();
+      else if (diff < -40) prevBtn.click();
+    }, { passive: true });
   })();
 
   // ===== Links Carousel =====

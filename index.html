@@ -160,46 +160,59 @@
     </section>
     <!-- Members Section -->
     <section id="members-section">
-      <!-- Cover state: member banner + TAP button -->
+      <!-- Cover state: title + banner + TAP -->
       <div id="members-cover">
+        <h2 id="members-title">メンバー紹介</h2>
         <img src="public/assets/logo/deep-sea-lab-member.png.PNG" alt="LAB MEMBERS" id="members-banner" />
-        <button id="members-tap" class="links-arrow">TAP</button>
+        <div id="members-tap">TAP</div>
       </div>
 
-      <!-- Profile state: individual member cards -->
-      <div id="members-profiles" class="hidden">
-        <div class="member-card" data-member="a">
-          <div class="member-img">
-            <img src="public/assets/characters/researcher-a-scene-yogibo-sleep.png" alt="研究員A" />
+      <!-- Carousel state (hidden by default) -->
+      <div id="members-carousel" class="hidden">
+        <div class="members-display">
+          <!-- Slides: image left, text right -->
+          <div class="member-slide active" data-index="0">
+            <div class="member-slide-img">
+              <img src="public/assets/characters/researcher-a-scene-yogibo-sleep.png" alt="研究員A" />
+            </div>
+            <div class="member-slide-info member-color-a">
+              <h3>研究員A</h3>
+              <p>魔王×大天使。ヨギボーで寝るのが好き。たまに話を広げすぎて収拾がつかなくなるが、本人はだいたい楽しそう。あだ名は騒音。</p>
+            </div>
           </div>
-          <div class="member-info member-color-a">
-            <h3>研究員A</h3>
-            <p>魔王×大天使。ヨギボーで寝るのが好き。たまに話を広げすぎて収拾がつかなくなるが、本人はだいたい楽しそう。あだ名は騒音。</p>
+          <div class="member-slide" data-index="1">
+            <div class="member-slide-img">
+              <img src="public/assets/characters/researcher-b-scene-whiteboard-rush.png" alt="研究員B" />
+            </div>
+            <div class="member-slide-info member-color-b">
+              <h3>研究員B</h3>
+              <p>マッドサイエンティスト×グレーハットハッカー。考え事を始めると急に静かになる。机の上は散らかって見えるのに、本人の中では全部どこにあるか分かってる。</p>
+            </div>
+          </div>
+          <div class="member-slide" data-index="2">
+            <div class="member-slide-img">
+              <img src="public/assets/characters/researcher-c-scene-coffee-cigar.png" alt="研究員C" />
+            </div>
+            <div class="member-slide-info member-color-c">
+              <h3>研究員C</h3>
+              <p>マフィアボス×政治家。無糖の珈琲を嗜む。妙にそれっぽい格言を残して去るが、たまに本人も雰囲気で言ってる。「焦るな。濁った水ほど足元を隠す」とか言いそう。</p>
+            </div>
           </div>
         </div>
-
-        <div class="member-card" data-member="b">
-          <div class="member-img">
-            <img src="public/assets/characters/researcher-b-scene-whiteboard-rush.png" alt="研究員B" />
+        <!-- Nav: arrows + dots -->
+        <div class="members-nav">
+          <button class="links-arrow" id="members-prev">&lt;</button>
+          <div class="members-dots">
+            <span class="members-dot active" data-index="0"></span>
+            <span class="members-dot" data-index="1"></span>
+            <span class="members-dot" data-index="2"></span>
           </div>
-          <div class="member-info member-color-b">
-            <h3>研究員B</h3>
-            <p>マッドサイエンティスト×グレーハットハッカー。考え事を始めると急に静かになる。机の上は散らかって見えるのに、本人の中では全部どこにあるか分かってる。</p>
-          </div>
+          <button class="links-arrow" id="members-next">&gt;</button>
         </div>
-
-        <div class="member-card" data-member="c">
-          <div class="member-img">
-            <img src="public/assets/characters/researcher-c-scene-coffee-cigar.png" alt="研究員C" />
-          </div>
-          <div class="member-info member-color-c">
-            <h3>研究員C</h3>
-            <p>マフィアボス×政治家。無糖の珈琲を嗜む。妙にそれっぽい格言を残して去るが、たまに本人も雰囲気で言ってる。「焦るな。濁った水ほど足元を隠す」とか言いそう。</p>
-          </div>
-        </div>
-
-        <button id="members-back" class="links-arrow">&lt;</button>
       </div>
+
+      <!-- Noise overlay for transition -->
+      <canvas id="members-noise" class="hidden"></canvas>
     </section>
 
   </div>
