@@ -192,24 +192,37 @@
   var themeVolume = 1.0;
   var themeFadeTimer = null;
   var mediaIsPlaying = false;
+  var themeUnmuted = false;
 
-  // Start theme song on first user interaction (autoplay policy)
-  function startThemeSong() {
-    if (themeSong.paused) {
-      themeSong.volume = themeVolume;
-      themeSong.play().catch(function () {});
+  // Try autoplay immediately (muted first if needed, then unmute on interaction)
+  function initThemeSong() {
+    themeSong.volume = themeVolume;
+    var playPromise = themeSong.play();
+    if (playPromise) {
+      playPromise.then(function () {
+        // Autoplay with sound succeeded
+        themeUnmuted = true;
+      }).catch(function () {
+        // Blocked by browser - try muted autoplay, then unmute on first interaction
+        themeSong.muted = true;
+        themeSong.play().catch(function () {});
+        function unmute() {
+          themeSong.muted = false;
+          themeSong.volume = 0;
+          themeUnmuted = true;
+          fadeThemeSong(themeVolume, 800);
+          document.removeEventListener('click', unmute);
+          document.removeEventListener('touchstart', unmute);
+          document.removeEventListener('keydown', unmute);
+        }
+        document.addEventListener('click', unmute, { once: false });
+        document.addEventListener('touchstart', unmute, { once: false });
+        document.addEventListener('keydown', unmute, { once: false });
+      });
     }
   }
 
-  document.addEventListener('click', function initTheme() {
-    startThemeSong();
-    document.removeEventListener('click', initTheme);
-  }, { once: true });
-
-  document.addEventListener('touchstart', function initThemeTouch() {
-    startThemeSong();
-    document.removeEventListener('touchstart', initThemeTouch);
-  }, { once: true });
+  initThemeSong();
 
   // Fade theme song volume
   function fadeThemeSong(targetVol, duration, callback) {
