@@ -414,14 +414,15 @@ body {
 }
 
 .links-arrow {
-  width: 28px;
-  height: 28px;
-  border: 1px solid #2a4060;
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #2a4a80;
   border-radius: 50%;
-  background: transparent;
-  color: #5a8ae0;
-  font-size: 14px;
+  background: #0a0e1a;
+  color: #4a90ff;
+  font-size: 15px;
   font-weight: bold;
+  font-family: inherit;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -429,12 +430,15 @@ body {
   transition: all 0.2s ease;
   padding: 0;
   flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .links-arrow:hover {
   border-color: #3a7cff;
-  color: #a0d4ff;
-  background: rgba(42, 64, 128, 0.2);
+  color: #80bbff;
+  background: #0f1a30;
+  box-shadow: 0 0 8px rgba(58, 124, 255, 0.25);
 }
 
 .links-dots {

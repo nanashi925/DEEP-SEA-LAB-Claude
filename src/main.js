@@ -603,7 +603,8 @@
     }, { passive: true });
 
     carousel.addEventListener('touchmove', function (e) {
-      if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 25) isSwiping = true;
+      var dx = Math.abs(e.changedTouches[0].screenX - touchStartX);
+      if (dx > 20) isSwiping = true;
     }, { passive: true });
 
     carousel.addEventListener('touchend', function (e) {
@@ -612,5 +613,13 @@
       if (diff > 40) nextCard();
       else if (diff < -40) prevCard();
     }, { passive: true });
+
+    // Block link clicks during swipe
+    carousel.addEventListener('click', function (e) {
+      if (isSwiping) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
   })();
 })();
