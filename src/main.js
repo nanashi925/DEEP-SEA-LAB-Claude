@@ -438,22 +438,30 @@
     return { type: 'iframe', url: url };
   }
 
-  // Display media in player (with theme song fade-out)
-  function showMedia(html) {
-    mediaIsPlaying = true;
-    // Fade out theme song over 0.8s, then show media
-    fadeThemeSong(0, 800, function () {
+  // Display media in player (with theme song fade-out for audio/video)
+  function showMedia(html, muteTheme) {
+    if (muteTheme === undefined) muteTheme = true;
+    if (muteTheme) {
+      mediaIsPlaying = true;
+      // Fade out theme song over 0.8s, then show media
+      fadeThemeSong(0, 800, function () {
+        playerContainer.innerHTML = html;
+        mediaPlayer.classList.remove('hidden');
+        triggerMediaReaction();
+        // Listen for media end to resume theme song
+        var mediaEl = playerContainer.querySelector('video, audio');
+        if (mediaEl) {
+          mediaEl.addEventListener('ended', function () {
+            resumeThemeSong();
+          });
+        }
+      });
+    } else {
+      // Show media without stopping theme song (e.g. images)
       playerContainer.innerHTML = html;
       mediaPlayer.classList.remove('hidden');
       triggerMediaReaction();
-      // Listen for media end to resume theme song
-      var mediaEl = playerContainer.querySelector('video, audio');
-      if (mediaEl) {
-        mediaEl.addEventListener('ended', function () {
-          resumeThemeSong();
-        });
-      }
-    });
+    }
   }
 
   function resumeThemeSong() {
@@ -474,7 +482,9 @@
 
     mediaPlayer.classList.add('hidden');
     playerContainer.innerHTML = '';
-    resumeThemeSong();
+    if (mediaIsPlaying) {
+      resumeThemeSong();
+    }
   }
 
   // Sanitize URL for HTML attribute
@@ -502,7 +512,7 @@
     } else if (parsed.type === 'audio-url') {
       showMedia('<audio controls autoplay src="' + escAttr(url) + '"></audio>');
     } else if (parsed.type === 'image-url') {
-      showMedia('<img src="' + escAttr(url) + '" alt="投稿画像" />');
+      showMedia('<img src="' + escAttr(url) + '" alt="投稿画像" />', false);
     } else {
       showMedia('<iframe src="' + escAttr(url) + '" allow="autoplay" allowfullscreen></iframe>');
     }
@@ -529,7 +539,7 @@
     } else if (type.indexOf('audio') === 0) {
       showMedia('<audio controls autoplay src="' + objUrl + '"></audio>');
     } else if (type.indexOf('image') === 0) {
-      showMedia('<img src="' + objUrl + '" alt="投稿画像" />');
+      showMedia('<img src="' + objUrl + '" alt="投稿画像" />', false);
     } else {
       showMedia('<p style="color:#6880a0;padding:20px;text-align:center;">このファイル形式は再生できません</p>');
     }
