@@ -692,6 +692,38 @@
     }, { passive: true });
   })();
 
+  // ===== About Overlay =====
+  (function initAbout() {
+    var btn = document.getElementById('about-btn');
+    var overlay = document.getElementById('about-overlay');
+    var backBtn = document.getElementById('about-back');
+    if (!btn || !overlay) return;
+
+    function openAbout() {
+      overlay.classList.remove('hidden');
+      // Trigger reflow so transition fires
+      void overlay.offsetWidth;
+      overlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeAbout() {
+      overlay.classList.remove('visible');
+      document.body.style.overflow = '';
+      setTimeout(function () {
+        overlay.classList.add('hidden');
+      }, 500);
+    }
+
+    btn.addEventListener('click', openAbout);
+    backBtn.addEventListener('click', closeAbout);
+
+    // Close on overlay background click
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeAbout();
+    });
+  })();
+
   // ===== Links Carousel =====
   (function initLinksCarousel() {
     var cards = document.querySelectorAll('.links-card');
