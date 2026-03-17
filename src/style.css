@@ -632,7 +632,9 @@ body {
 }
 
 #members-back {
-  font-size: 12px;
+  font-size: 8px;
+  padding: 8px 12px;
+  letter-spacing: 1px;
 }
 
 /* ===== Media Section ===== */

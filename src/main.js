@@ -642,11 +642,19 @@
       });
     });
 
-    // Prev / Next loop through slides
+    // Prev: on first slide → back to cover, otherwise previous slide
     prevBtn.addEventListener('click', function () {
-      showSlide((currentSlide - 1 + totalSlides) % totalSlides);
+      if (currentSlide === 0) {
+        noiseTransition(function () {
+          carousel.classList.add('hidden');
+          cover.classList.remove('hidden');
+        });
+      } else {
+        showSlide(currentSlide - 1);
+      }
     });
 
+    // Next: loop through slides
     nextBtn.addEventListener('click', function () {
       showSlide((currentSlide + 1) % totalSlides);
     });
