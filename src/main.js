@@ -642,17 +642,9 @@
       });
     });
 
-    // Prev button on first slide → back to cover
+    // Prev / Next loop through slides
     prevBtn.addEventListener('click', function () {
-      if (currentSlide === 0) {
-        // Go back to cover with noise
-        noiseTransition(function () {
-          carousel.classList.add('hidden');
-          cover.classList.remove('hidden');
-        });
-      } else {
-        showSlide(currentSlide - 1);
-      }
+      showSlide((currentSlide - 1 + totalSlides) % totalSlides);
     });
 
     nextBtn.addEventListener('click', function () {
@@ -666,6 +658,17 @@
         if (idx !== currentSlide) showSlide(idx);
       });
     });
+
+    // Back button → return to cover
+    var backBtn = document.getElementById('members-back');
+    if (backBtn) {
+      backBtn.addEventListener('click', function () {
+        noiseTransition(function () {
+          carousel.classList.add('hidden');
+          cover.classList.remove('hidden');
+        });
+      });
+    }
 
     // Swipe support
     var touchStartX = 0;
